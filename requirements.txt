@@ -4,4 +4,11 @@ pillow>=8.0.0
 tkinter
 
 
-#sudo apt-get install python3-tk
+#sudo apt-get install python3-tk python3-pil.imagetk python3-pil
+
+
+#install libjpeg-dev 
+#sudo apt install libjpeg-dev libopenjp2-7-dev libtiff5-dev zlib1g-dev \
+#                 libfreetype6-dev liblcms2-dev libwebp-dev \
+#                 libharfbuzz-dev libfribidi-dev  python3-dev  xvfb
+

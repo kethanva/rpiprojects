@@ -50,6 +50,9 @@ source venv/bin/activate
 pip install -r requirments.txt
 python3 src/main.py
 
+## Cleanup
+ps -aef| grep main.py | grep src | tr -s ' ' | cut -d' ' -f3 | xargs kill -9
+
 ## Functionality
 
 - **Calendar Display:** The dock will show a calendar with highlighted dates based on events.
