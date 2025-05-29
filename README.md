@@ -44,6 +44,12 @@ raspberry-pi-dock
    python3 src/main.py
    ```
 
+## Venv
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirments.txt
+python3 src/main.py
+
 ## Functionality
 
 - **Calendar Display:** The dock will show a calendar with highlighted dates based on events.
