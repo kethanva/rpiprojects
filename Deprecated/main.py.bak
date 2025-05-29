@@ -1,0 +1,97 @@
+import tkinter as tk
+from tkinter import ttk
+import time
+from threading import Thread
+from PIL import Image, ImageTk
+import os
+import io
+
+from calen.calendar_display import CalendarDisplay
+from weatherV3.weather_service import WeatherService
+from clock.clock_display import ClockDisplay
+import utils.config as util
+
+class DockDisplay(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("Raspberry Pi Dock")
+        self.geometry("700x400")
+        self.configure(bg="#222831")
+
+        self.calendar_display = CalendarDisplay()
+        self.weather_service = WeatherService(api_key=util.WEATHER_API_KEY)
+        self.clock_display = ClockDisplay()
+
+        # Time label
+        self.time_label = tk.Label(self, font=("Helvetica", 32), fg="#FFD369", bg="#222831")
+        self.time_label.pack(pady=10)
+
+        # Calendar frame
+        self.calendar_frame = tk.Frame(self, bg="#393E46")
+        self.calendar_frame.pack(pady=10)
+        self.calendar_label = tk.Label(self.calendar_frame, font=("Helvetica", 16), fg="#EEEEEE", bg="#393E46")
+        self.calendar_label.pack()
+
+        # Weather label
+        self.temperature_label = tk.Label(self, font=("Helvetica", 18), fg="#00ADB5", bg="#222831")
+        self.temperature_label.pack(pady=10)
+
+        self.weatherdesc_label = tk.Label(self, font=("Helvetica", 18), fg="#00ADB5", bg="#222831", compound="left")
+        self.weatherdesc_label.pack(pady=10)
+        self.windspeed_label = tk.Label(self, font=("Helvetica", 18), fg="#00ADB5", bg="#222831")
+        self.windspeed_label.pack(pady=10)
+        self.humidity_label = tk.Label(self, font=("Helvetica", 18), fg="#00ADB5", bg="#222831")
+        self.humidity_label.pack(pady=10)
+
+        # Weather icon label
+        self.weather_icon_label = tk.Label(self, bg="#222831")
+        self.weather_icon_label.pack(pady=10)
+
+        self.update_display()
+
+    def load_weather_icon(self, icon_code):
+        try:
+            # Construct path to image file
+            image_path = os.path.join('images', f'{icon_code}_t.png')
+            
+            # Load and convert image
+            image = Image.open(image_path)
+            photo = ImageTk.PhotoImage(image)
+            
+            return photo  # Return the PhotoImage
+        except Exception as e:
+            print(f"Could not load weather icon: {e}")
+            return None
+
+    def update_display(self):
+        # Update time
+        current_time = self.clock_display.get_time()
+        self.time_label.config(text=current_time)
+        
+        # Update calendar
+        calendar_text = self.calendar_display.get_calendar()
+        self.calendar_label.config(text=calendar_text)
+
+        # Update weather
+        weather_info = self.weather_service.fetch_weather()
+        icon_code = weather_info['current']['weather'][0]['icon']
+        weather_description = weather_info['current']['weather'][0]['description']
+
+        photo = self.load_weather_icon(icon_code)  
+        if photo:
+            self.weatherdesc_label.config(image=photo, text=f"Bangalore Current Weather: {weather_description} with Clouds {weather_info['current']['clouds']}% ", compound="right")
+            self.weatherdesc_label.image = photo  # Keep a reference!
+        else:
+            self.weatherdesc_label.config(text=f"Bangalore Current Weather: {weather_description} with Clouds {weather_info['current']['clouds']}%", image='', compound='none') # clear image if loading fails
+
+        self.temperature_label.config(text=f"Bangalore : {weather_info['current']['temp']}°C (Feels {weather_info['current']['feels_like']}°C)")
+        self.windspeed_label.config(text=f"Wind Speed : {weather_info['current']['wind_speed']} m/s")    
+        self.humidity_label.config(text=f"Humidity : {weather_info['current']['humidity']}%")
+        self.after(10000, self.update_display)  # Update every minute
+
+def main():
+    app = DockDisplay()
+    app.mainloop()
+
+if __name__ == "__main__":
+    main()
